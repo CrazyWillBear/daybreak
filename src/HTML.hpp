@@ -7,12 +7,12 @@
 #include <vector>
 
 typedef struct _HTMLElementAttributes {
-    std::string _id = "";
-    std::string _class = "";
-    std::string _style = "";
+    std::string _id;
+    std::string _class;
+    std::string _style;
 
-    bool base() {
-        if (this->_id == "" && this->_class == "" && this->_style == "")
+    [[nodiscard]] bool base() const {
+        if (this->_id.empty() && this->_class.empty() && this->_style.empty())
             return true;
         return false;
     }
@@ -31,10 +31,10 @@ public:
             HTMLElementAttributes attributes, 
             std::string content, 
             std::vector<HTMLElement*> children) : 
-        elementName(name),
-        attributes(attributes),
-        content(content),
-        children(children) {}
+        elementName(std::move(name)),
+        attributes(std::move(attributes)),
+        content(std::move(content)),
+        children(std::move(children)) {}
 
     virtual ~HTMLElement() = default;
 
@@ -60,27 +60,27 @@ class name : public HTMLElement { \
 public: \
     explicit name(std::vector<HTMLElement*> children = {}) : \
         HTMLElement(#name, {}, "", std::move(children)) {} \
-    name(HTMLElementAttributes attrib = {}, std::vector<HTMLElement*> children = {}) : \
+    explicit name(HTMLElementAttributes attrib = {}, std::vector<HTMLElement*> children = {}) : \
         HTMLElement(#name, std::move(attrib), "", std::move(children)) {} \
 };
 
 #define DEFINE_TEXT_ELEMENT(name) \
 class name : public HTMLElement { \
 public: \
-    name(HTMLElementAttributes attributes = {}, std::string content = "", std::vector<HTMLElement*> children = {}) : \
-        HTMLElement(#name, attributes, content, std::move(children)) {} \
-    name(std::string content = "", std::vector<HTMLElement*> children = {}) : \
-        HTMLElement(#name, {}, content, std::move(children)) {} \
+    explicit name(HTMLElementAttributes attributes = {}, std::string content = "", std::vector<HTMLElement*> children = {}) : \
+        HTMLElement(#name, std::move(attributes), std::move(content), std::move(children)) {} \
+    explicit name(std::string content = "", std::vector<HTMLElement*> children = {}) : \
+        HTMLElement(#name, {}, std::move(content), std::move(children)) {} \
 };
 
 
 static std::string CRLF = "\r\n";
 
-class HTML : public ResponseContent {
+class HTML final : public ResponseContent {
 private:
     HTMLElement *root;
 
-    std::string recurseRoot(HTMLElement* root) {
+    std::string recurseRoot(HTMLElement *root) const {
         if (!root) return "";
 
         std::stringstream output;
@@ -91,7 +91,7 @@ private:
         } else {
             output << "<" << root->getElementName() << " ";
 
-            if (attributes._style != "")
+            if (!attributes._style.empty())
                 output << "style=\"" << attributes._style << "\"";
             output << ">" << CRLF;
         }
@@ -110,11 +110,23 @@ private:
         return output.str();
     }
 
-public:
-    HTML(HTMLElement *root) : root(std::move(root)) {}
-    ~HTML() = default;
+    void recursiveDelete(HTMLElement *root) {
+        if (!root) return;
 
-    std::string raw() override {
+        for (auto child : root->getChildren()) {
+            recursiveDelete(child);
+        }
+
+        delete root;
+    }
+
+public:
+    explicit HTML(HTMLElement *root) : root(root) {}
+    ~HTML() override {
+        this->recursiveDelete(this->root);
+    };
+
+    [[nodiscard]] std::string raw() const override {
         std::stringstream output;
 
         output << "<!DOCTYPE html>" << CRLF;
@@ -123,7 +135,7 @@ public:
         return output.str();
     }
 
-    size_t length() override {
+    [[nodiscard]] std::size_t length() const override {
         return raw().size();
     }
 };

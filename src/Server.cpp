@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include "HTML.hpp"
 #include "Response.hpp"
+#include "Client.hpp"
 #include <arpa/inet.h>
 #include <iostream>
 #include <memory>
@@ -15,7 +16,7 @@ Server::Server(unsigned short port) : threadPool(5), port(port) {
 
     this->serverHandle = socket(AF_INET, SOCK_STREAM, 0);
     if (serverHandle < 0)
-        throw std::runtime_error("Failed to initialize socket file descriptor");
+        throw std::runtime_error("Failed to initialize clientHandle file descriptor");
 
     int bindStatus = bind(
             serverHandle, 
@@ -23,8 +24,9 @@ Server::Server(unsigned short port) : threadPool(5), port(port) {
             sizeof(this->serverAddress)
     );
 
-    if (bindStatus < 0)
-        throw std::runtime_error("Failed to bind socket");
+    if (bindStatus < 0) {
+        throw std::runtime_error("Failed to bind serverHandle");
+    }
 }
 
 Server::~Server() {
@@ -33,57 +35,51 @@ Server::~Server() {
 }
 
 void Server::start() {
-    listen(this->serverHandle, 1);
+    listen(this->serverHandle, 5);
     std::cout << "Server started and listening on port: " << this->port << "\n";
     std::cout << "Waiting for connections...\n";
     
     while (true) {
-        sockaddr_in clientAddress;
-        socklen_t clientAddressSize = sizeof(clientAddress);
+        auto client = Client::await(this->serverHandle).value();
 
-        int clientHandle = accept(this->serverHandle, reinterpret_cast<sockaddr*>(&clientAddress), &clientAddressSize);
-        if (clientHandle < 0) {
-            std::cerr << "Client failed to connect, skipping.\n";
-            continue;
-        }
+        std::cout << "Client connected from: " << client.ipAsString() << "\n";
 
-        char *clientIP = inet_ntoa(clientAddress.sin_addr);
-        std::cout << "Client connected from: " << clientIP << "\n";
+        this->threadPool.enqueue([client, this]() {
+            auto data = client.recv().value();
+            const Method& requestMethod = data.getMethod();
 
-        this->threadPool.enqueue([&clientHandle]() {
-            constexpr size_t bufferSize = 5120;
-            char buffer[bufferSize];
+            for (const auto &target : Server::targets) {
+                if (target.first.method == requestMethod.method && target.first.path == requestMethod.path) {
+                    const auto bytesWritten = client.send(target.second(target.first));
+                    (void) bytesWritten;
 
-            int recievedBytes = recv(clientHandle, &buffer, bufferSize, 0);
-            if (recievedBytes == 0) {
-                std::cerr << "Failed to recieve bytes from client\n";
-                return;
+                    client.close();
+
+                    return;
+                }
             }
 
-            buffer[bufferSize - 1] = '\0';
-
-            HTML content(
+            std::shared_ptr<ResponseContent> content = std::make_shared<HTML>(
                 $ html({
                     $ head({
-                        $ title("river")
+                        $ title("daybreak")
                     }),
                     $ body(attrib {._style = "color: red;"}, {
-                        $ h1("river test"),
-                        $ p("line 2")
+                        $ h1("daybreak 404"),
                     })
                 })
             );
 
+
             Response response(Responses::OK, content);
-            std::string raw = response.build();
+            const auto bytesWritten = client.send(response);
+            (void) bytesWritten;
 
-            size_t bytesWritten = send(clientHandle, raw.c_str(), raw.size(), 0);
-            if (bytesWritten < 0) {
-                std::cerr << "Failed to send bytes to client\n";
-                return;
-            }
-
-            close(clientHandle);
+            client.close();
         });
     }
+}
+
+void Server::addTarget(const Pattern &pattern, Response (*target)(const Pattern &)) {
+    targets.emplace_back(pattern, target);
 }

@@ -1,9 +1,13 @@
 #pragma once
 
 #include "ThreadPool.hpp"
+#include "Response.hpp"
+#include "Request.hpp"
+
 #include <iostream>
 #include <cstring>
 #include <stdexcept>
+#include <map>
 
 #include <unistd.h>
 #include <netinet/in.h>
@@ -11,6 +15,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <fcntl.h>
+
+typedef struct {
+    std::string method;
+    std::string path;
+} Pattern;
 
 class Server {
 private:
@@ -21,9 +30,14 @@ private:
 
     unsigned short port;
 
+    std::vector<std::pair<Pattern, Response (*)(const Pattern &)>> targets;
+
 public:
+
     explicit Server(unsigned short port);
     ~Server();
 
-    void start();
+    [[noreturn]]void start();
+
+    void addTarget(const Pattern &pattern, Response (*target)(const Pattern &));
 };

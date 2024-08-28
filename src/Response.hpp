@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <string>
 #include <format>
+#include <memory>
 
 typedef struct {
     unsigned int code;
@@ -27,19 +28,22 @@ public:
 
 class ResponseContent {
 public:
-    virtual std::string raw() = 0;
-    virtual size_t length() = 0;
+    [[nodiscard]] virtual std::string raw() const = 0;
+    [[nodiscard]] virtual size_t length() const = 0;
     virtual ~ResponseContent() = default;
 };
 
 class Response {
 private:
     Status status;
-    ResponseContent &responseContent;
+    std::shared_ptr<ResponseContent> responseContent;
 
 public:
-    Response(Status status, ResponseContent &content);
+    Response(const Status &status, std::shared_ptr<ResponseContent> content);
     ~Response();
+
+    Status getStatus() const;
+    const ResponseContent &getResponseContent() const;
 
     std::string build();
 };

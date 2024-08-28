@@ -1,21 +1,29 @@
 #include "Response.hpp"
 
-Response::Response(Status status, ResponseContent &content) :
-    status(std::move(status)),
-    responseContent(content) {
+#include <utility>
+
+Response::Response(const Status &status, std::shared_ptr<ResponseContent> content) :
+    status(status),
+    responseContent(std::move(content)) {
 }
 
-Response::~Response() {
+Response::~Response() = default;
 
+Status Response::getStatus() const {
+    return this->status;
+}
+
+const ResponseContent &Response::getResponseContent() const {
+    return *this->responseContent;
 }
 
 std::string Response::build() {
     std::string statusLine = std::format("HTTP/1.1 {} {}", this->status.code, this->status.name);
     return std::format("{}\r\n"
-"Server: river by gloggers\r\n"
+"Server: daybreak by gloggers\r\n"
 "Content-Type: text/html\r\n"
 "Content-Length: {}\n"
 "Connection: Closed\r\n"
 "\r\n"
-"{}\r\n", statusLine, this->responseContent.length(), this->responseContent.raw());
+"{}\r\n", statusLine, this->responseContent->length(), this->responseContent->raw());
 }
