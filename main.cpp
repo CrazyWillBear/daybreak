@@ -19,7 +19,7 @@ TARGET(index) {
 ROUTE(Methods::GET, "/", index)
 
 int main() {
-    Daybreak(7878).start();
+    Daybreak::instance->start();
 
     return 0;
 }

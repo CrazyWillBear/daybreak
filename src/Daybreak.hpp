@@ -38,12 +38,15 @@ private:
 
     static std::vector<std::pair<Pattern, Response (*)(const Pattern &, const Request &)>> targets;
 
-public:
-
     explicit Daybreak(unsigned short port);
+
+public:
     ~Daybreak();
 
-    [[noreturn]]void start();
+    void start();
 
     static void addTarget(const Pattern &pattern, Response (*target)(const Pattern &, const Request &));
+
+    static std::unique_ptr<Daybreak> instance;
 };
+
