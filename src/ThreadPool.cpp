@@ -2,14 +2,14 @@
 #include <functional>
 #include <mutex>
 
-ThreadPool::ThreadPool(std::size_t workerCount) : stop(false) {
+ThreadPool::ThreadPool(const std::size_t workerCount) : stop(false) {
     for (size_t i = 0; i < workerCount; i++) {
         this->threads.emplace_back([this]() {
             while (true) {
                 std::function<void()> task;
                 {
-                    std::unique_lock<std::mutex> lock(this->queueLock);
-                    this->cv.wait(lock, [this]() {
+                    std::unique_lock lock(this->queueLock);
+                    this->cv.wait(lock, [this] {
                         return this->stop || !this->queue.empty();
                     });
 

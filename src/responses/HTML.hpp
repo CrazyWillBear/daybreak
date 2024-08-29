@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Response.hpp"
+#include "../Response.hpp"
 
 #include <sstream>
 #include <string>
@@ -138,6 +138,15 @@ public:
     [[nodiscard]] std::size_t length() const override {
         return raw().size();
     }
+
+    [[nodiscard]] std::string mime() const noexcept override {
+        return "text/html; charset=utf-8";
+    }
+
+    /*
+    [[nodiscard]] const std::string mime() const override {
+        std::string("text/html; charset=utf-8");
+    }*/
 };
 
 typedef HTMLElementAttributes attrib;
@@ -149,6 +158,8 @@ DEFINE_BASIC_ELEMENT(head);
 DEFINE_BASIC_ELEMENT(body);
 
 DEFINE_TEXT_ELEMENT(title)
+
+DEFINE_TEXT_ELEMENT(code);
 
 DEFINE_TEXT_ELEMENT(p);
 DEFINE_TEXT_ELEMENT(h1);

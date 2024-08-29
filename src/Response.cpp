@@ -21,9 +21,9 @@ std::string Response::build() {
     std::string statusLine = std::format("HTTP/1.1 {} {}", this->status.code, this->status.name);
     return std::format("{}\r\n"
 "Server: daybreak by gloggers\r\n"
-"Content-Type: text/html\r\n"
+"Content-Type: {}\r\n"
 "Content-Length: {}\n"
 "Connection: Closed\r\n"
 "\r\n"
-"{}\r\n", statusLine, this->responseContent->length(), this->responseContent->raw());
+"{}\r\n", statusLine, this->responseContent->mime(), this->responseContent->length(), this->responseContent->raw());
 }

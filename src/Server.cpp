@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "HTML.hpp"
+#include "responses/HTML.hpp"
 #include "Response.hpp"
 #include "Client.hpp"
 #include <arpa/inet.h>
@@ -7,7 +7,10 @@
 #include <memory>
 #include <sys/socket.h>
 
-Server::Server(unsigned short port) : threadPool(5), port(port) {
+
+std::vector<std::pair<Pattern, Response (*)(const Pattern &, const Request &)>> Server::targets;
+
+Server::Server(const unsigned short port) : threadPool(5), port(port) {
     memset(&this->serverAddress, 0, sizeof(this->serverAddress));
 
     this->serverAddress.sin_family = AF_INET;
@@ -45,12 +48,12 @@ void Server::start() {
         std::cout << "Client connected from: " << client.ipAsString() << "\n";
 
         this->threadPool.enqueue([client, this]() {
-            auto data = client.recv().value();
+            const Request data = client.recv().value();
             const Method& requestMethod = data.getMethod();
 
-            for (const auto &target : Server::targets) {
-                if (target.first.method == requestMethod.method && target.first.path == requestMethod.path) {
-                    const auto bytesWritten = client.send(target.second(target.first));
+            for (const auto &[fst, snd] : Server::targets) {
+                if (fst.method == requestMethod.method && fst.path == requestMethod.path) {
+                    const auto bytesWritten = client.send(snd(fst, data));
                     (void) bytesWritten;
 
                     client.close();
@@ -80,6 +83,6 @@ void Server::start() {
     }
 }
 
-void Server::addTarget(const Pattern &pattern, Response (*target)(const Pattern &)) {
+void Server::addTarget(const Pattern &pattern, Response (*target)(const Pattern &, const Request &)) {
     targets.emplace_back(pattern, target);
 }

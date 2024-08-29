@@ -16,6 +16,12 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#define TARGET(_name) Response _name(const Pattern &pattern, const Request &request)
+#define ROUTE(_method, _path, _target) __attribute__((constructor)) void _router_##_target() { \
+        Server::addTarget(Pattern {.method = _method, .path = _path}, _target);\
+    }
+
+
 typedef struct {
     std::string method;
     std::string path;
@@ -30,7 +36,7 @@ private:
 
     unsigned short port;
 
-    std::vector<std::pair<Pattern, Response (*)(const Pattern &)>> targets;
+    static std::vector<std::pair<Pattern, Response (*)(const Pattern &, const Request &)>> targets;
 
 public:
 
@@ -39,5 +45,5 @@ public:
 
     [[noreturn]]void start();
 
-    void addTarget(const Pattern &pattern, Response (*target)(const Pattern &));
+    static void addTarget(const Pattern &pattern, Response (*target)(const Pattern &, const Request &));
 };

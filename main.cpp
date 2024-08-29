@@ -1,27 +1,25 @@
 #include "src/Server.hpp"
 
-#include "HTML.hpp"
+#include "src/responses/HTML.hpp"
 
-auto index(const Pattern &pattern) {
-    return Response(Responses::OK, std::make_shared<HTML>(
+TARGET(index) {
+    return {Responses::OK, std::make_shared<HTML>(
         $ html({
             $ head({
                 $ title("index")
             }),
             $ body({
-                $ p("this is the index page")
+                $ p("this is the index page, this is your request: "),
+                $ code(request.getMethod().method + " " + request.getMethod().path + " " + request.getMethod().version)
             })
         })
-    ));
+    )};
 }
 
+ROUTE(Methods::GET, "/", index)
+
 int main() {
-    Server server(7878);
-    server.addTarget({
-        .method = Methods::GET,
-        .path = "/"
-    }, index);
-    server.start();
+    Server(7878).start();
 
     return 0;
 }

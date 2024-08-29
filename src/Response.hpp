@@ -30,6 +30,7 @@ class ResponseContent {
 public:
     [[nodiscard]] virtual std::string raw() const = 0;
     [[nodiscard]] virtual size_t length() const = 0;
+    [[nodiscard]] virtual std::string mime() const noexcept = 0;
     virtual ~ResponseContent() = default;
 };
 
