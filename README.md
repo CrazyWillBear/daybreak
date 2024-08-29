@@ -23,10 +23,6 @@ Daybreak
 
 /* this is just a shortcut macro, you can do this manually like so: */
 /* auto index(const Pattern &pattern, const Request &request) */
-#include "src/Daybreak.hpp"
-
-#include "src/responses/HTML.hpp"
-
 TARGET(index) {
     return {Responses::OK, std::make_shared<HTML>(
         /* custom HTML DSL built into C++ */
