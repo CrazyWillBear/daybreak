@@ -9,6 +9,8 @@ TARGET(index) {
                 $ title("index")
             }),
             $ body({
+                {"style", "color: red;"}
+            }, {
                 $ p("this is the index page, this is your request: "),
                 $ code(request.getMethod().method + " " + request.getMethod().path + " " + request.getMethod().version)
             })

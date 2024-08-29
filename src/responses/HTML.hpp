@@ -1,34 +1,25 @@
 #pragma once
 
+#include <map>
+
 #include "../Response.hpp"
 
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
-
-typedef struct _HTMLElementAttributes {
-    std::string _id;
-    std::string _class;
-    std::string _style;
-
-    [[nodiscard]] bool base() const {
-        if (this->_id.empty() && this->_class.empty() && this->_style.empty())
-            return true;
-        return false;
-    }
-} HTMLElementAttributes;
 
 class HTMLElement {
 private:
     std::string elementName;
-    HTMLElementAttributes attributes;
+    std::vector<std::pair<std::string, std::string>> attributes;
     std::string content;
     std::vector<HTMLElement*> children;
 
 public:
     HTMLElement(
             std::string name,
-            HTMLElementAttributes attributes, 
+            std::vector<std::pair<std::string, std::string>> attributes,
             std::string content, 
             std::vector<HTMLElement*> children) : 
         elementName(std::move(name)),
@@ -42,7 +33,7 @@ public:
         return this->elementName;
     }
 
-    const HTMLElementAttributes &getAttributes() {
+    const std::vector<std::pair<std::string, std::string>> &getAttributes() {
         return this->attributes;
     }
 
@@ -60,14 +51,14 @@ class name : public HTMLElement { \
 public: \
     explicit name(std::vector<HTMLElement*> children = {}) : \
         HTMLElement(#name, {}, "", std::move(children)) {} \
-    explicit name(HTMLElementAttributes attrib = {}, std::vector<HTMLElement*> children = {}) : \
+    explicit name(std::vector<std::pair<std::string, std::string>> attrib = {}, std::vector<HTMLElement*> children = {}) : \
         HTMLElement(#name, std::move(attrib), "", std::move(children)) {} \
 };
 
 #define DEFINE_TEXT_ELEMENT(name) \
 class name : public HTMLElement { \
 public: \
-    explicit name(HTMLElementAttributes attributes = {}, std::string content = "", std::vector<HTMLElement*> children = {}) : \
+    explicit name(std::vector<std::pair<std::string, std::string>> attributes = {}, std::string content = "", std::vector<HTMLElement*> children = {}) : \
         HTMLElement(#name, std::move(attributes), std::move(content), std::move(children)) {} \
     explicit name(std::string content = "", std::vector<HTMLElement*> children = {}) : \
         HTMLElement(#name, {}, std::move(content), std::move(children)) {} \
@@ -85,14 +76,16 @@ private:
 
         std::stringstream output;
 
-        HTMLElementAttributes attributes = root->getAttributes();
-        if (attributes.base()) {
+        auto attributes = root->getAttributes();
+        if (attributes.empty()) {
             output << "<" << root->getElementName() << ">" << CRLF;
         } else {
             output << "<" << root->getElementName() << " ";
 
-            if (!attributes._style.empty())
-                output << "style=\"" << attributes._style << "\"";
+            for (auto &[first, second] : root->getAttributes()) {
+                output << first << "=\"" << second << "\" ";
+            }
+
             output << ">" << CRLF;
         }
 
@@ -142,14 +135,7 @@ public:
     [[nodiscard]] std::string mime() const noexcept override {
         return "text/html; charset=utf-8";
     }
-
-    /*
-    [[nodiscard]] const std::string mime() const override {
-        std::string("text/html; charset=utf-8");
-    }*/
 };
-
-typedef HTMLElementAttributes attrib;
 
 #define $ new
 

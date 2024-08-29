@@ -20,8 +20,6 @@ Request::Request(std::string rawRequest) : rawRequest(std::move(rawRequest)), me
         Header header = {};
         lineStream >> header;
 
-        std::cout << header << '\n';
-
         this->headers.emplace_back(header);
     }
 }

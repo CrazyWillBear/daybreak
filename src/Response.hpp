@@ -43,8 +43,8 @@ public:
     Response(const Status &status, std::shared_ptr<ResponseContent> content);
     ~Response();
 
-    Status getStatus() const;
-    const ResponseContent &getResponseContent() const;
+    [[nodiscard]] Status getStatus() const;
+    [[nodiscard]] const ResponseContent &getResponseContent() const;
 
     std::string build();
 };

@@ -64,22 +64,23 @@ void Daybreak::start() {
                 }
             }
 
+            /*
             const std::shared_ptr<ResponseContent> content = std::make_shared<HTML>(
                 $ html({
                     $ head({
                         $ title("daybreak")
                     }),
-                    $ body(attrib {._style = "color: red;"}, {
+                    $ body({"style", "color: red;"}, {
                         $ h1("daybreak 404"),
                     })
                 })
             );
-
-
+*/
+/*
             Response response(Responses::OK, content);
             const auto bytesWritten = client.send(response);
             (void) bytesWritten;
-
+*/
             client.close();
         });
     }
