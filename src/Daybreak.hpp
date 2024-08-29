@@ -18,7 +18,7 @@
 
 #define TARGET(_name) Response _name(const Pattern &pattern, const Request &request)
 #define ROUTE(_method, _path, _target) __attribute__((constructor)) void _router_##_target() { \
-        Server::addTarget(Pattern {.method = _method, .path = _path}, _target);\
+        Daybreak::addTarget(Pattern {.method = _method, .path = _path}, _target);\
     }
 
 
@@ -27,7 +27,7 @@ typedef struct {
     std::string path;
 } Pattern;
 
-class Server {
+class Daybreak {
 private:
     ThreadPool threadPool;
 
@@ -40,8 +40,8 @@ private:
 
 public:
 
-    explicit Server(unsigned short port);
-    ~Server();
+    explicit Daybreak(unsigned short port);
+    ~Daybreak();
 
     [[noreturn]]void start();
 

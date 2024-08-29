@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "Daybreak.hpp"
 #include "responses/HTML.hpp"
 #include "Response.hpp"
 #include "Client.hpp"
@@ -8,9 +8,9 @@
 #include <sys/socket.h>
 
 
-std::vector<std::pair<Pattern, Response (*)(const Pattern &, const Request &)>> Server::targets;
+std::vector<std::pair<Pattern, Response (*)(const Pattern &, const Request &)>> Daybreak::targets;
 
-Server::Server(const unsigned short port) : threadPool(5), port(port) {
+Daybreak::Daybreak(const unsigned short port) : threadPool(5), port(port) {
     memset(&this->serverAddress, 0, sizeof(this->serverAddress));
 
     this->serverAddress.sin_family = AF_INET;
@@ -32,12 +32,12 @@ Server::Server(const unsigned short port) : threadPool(5), port(port) {
     }
 }
 
-Server::~Server() {
+Daybreak::~Daybreak() {
     std::cerr << "Shutting down server handle.\n";
     close(this->serverHandle);
 }
 
-void Server::start() {
+void Daybreak::start() {
     listen(this->serverHandle, 5);
     std::cout << "Server started and listening on port: " << this->port << "\n";
     std::cout << "Waiting for connections...\n";
@@ -51,7 +51,7 @@ void Server::start() {
             const Request data = client.recv().value();
             const Method& requestMethod = data.getMethod();
 
-            for (const auto &[fst, snd] : Server::targets) {
+            for (const auto &[fst, snd] : Daybreak::targets) {
                 if (fst.method == requestMethod.method && fst.path == requestMethod.path) {
                     const auto bytesWritten = client.send(snd(fst, data));
                     (void) bytesWritten;
@@ -83,6 +83,6 @@ void Server::start() {
     }
 }
 
-void Server::addTarget(const Pattern &pattern, Response (*target)(const Pattern &, const Request &)) {
+void Daybreak::addTarget(const Pattern &pattern, Response (*target)(const Pattern &, const Request &)) {
     targets.emplace_back(pattern, target);
 }

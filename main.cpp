@@ -1,4 +1,4 @@
-#include "src/Server.hpp"
+#include "src/Daybreak.hpp"
 
 #include "src/responses/HTML.hpp"
 
@@ -19,7 +19,7 @@ TARGET(index) {
 ROUTE(Methods::GET, "/", index)
 
 int main() {
-    Server(7878).start();
+    Daybreak(7878).start();
 
     return 0;
 }
