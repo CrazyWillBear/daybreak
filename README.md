@@ -68,3 +68,8 @@ int main() {
 ```
 ## Why
 I write most of my code in C++ so I thought: "Why not write a C++ web framework, so I can integrate some C++ projects into it?". The speed of which is fantastic and is a great project to show off on my GitHub.
+## Features (No X means coming soon)
+- [X] Multithreading (ThreadPool for max efficiency)
+- [X] Polymorphic response data (see HTML.hpp for example, CSS coming soon)
+- [ ] Static responses (means no function ran at page visit for static sites, for instant loads)
+- [X] Advanced HTTP request and response handling

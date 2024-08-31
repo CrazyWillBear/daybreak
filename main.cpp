@@ -44,6 +44,10 @@ Response index(const Pattern &pattern, const Request &request) {
         .httpOnly = true
     }));
 
+    response.addCookie(Cookie({"test2", "hello2"}, CookieAttributes {
+        .httpOnly = true
+    }));
+
     return response;
 }
 
