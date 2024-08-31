@@ -2,6 +2,10 @@
 
 #include <utility>
 #include <sstream>
+#include <map>
+
+/* for trim() */
+#include "Request.hpp"
 
 std::map<SameSite, std::string> SameSiteMap = {
     { SameSite::Strict, "Strict" },
@@ -60,3 +64,40 @@ std::string Cookie::build() const {
     return std::format("Set-Cookie: {}={}{}\r\n", this->name, this->value, attributeStream.str());
 }
 
+auto Cookie::from_string(const std::string &value) -> std::vector<Cookie> {
+    std::vector<Cookie> cookies {};
+
+    // Remove "Cookie: " part
+    std::string header;
+    std::stringstream cookieStream(value);
+    std::getline(cookieStream, header, ':');
+
+    std::string section;
+    // Skip leading spaces after the colon
+    std::getline(cookieStream >> std::ws, section);
+
+    // Split into key-value pairs by ';'
+    std::stringstream sectionStream(section);
+    std::string cookiePart;
+    while (std::getline(sectionStream, cookiePart, ';')) {
+        // Trim leading and trailing spaces
+        cookiePart.erase(0, cookiePart.find_first_not_of(" \t"));
+        cookiePart.erase(cookiePart.find_last_not_of(" \t") + 1);
+
+        // Split by '='
+        if (size_t pos = cookiePart.find('='); pos != std::string::npos) {
+            std::string key = cookiePart.substr(0, pos);
+            std::string val = cookiePart.substr(pos + 1);
+
+            // Trim spaces from key and value
+            key.erase(0, key.find_first_not_of(" \t"));
+            key.erase(key.find_last_not_of(" \t") + 1);
+            val.erase(0, val.find_first_not_of(" \t"));
+            val.erase(val.find_last_not_of(" \t") + 1);
+
+            cookies.emplace_back(key, val);
+        }
+    }
+
+    return cookies;
+}

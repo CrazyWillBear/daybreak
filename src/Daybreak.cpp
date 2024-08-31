@@ -23,6 +23,9 @@ Daybreak::Daybreak(const unsigned short port) : threadPool(5), serverAddress({})
     if (serverHandle < 0)
         throw std::runtime_error("Failed to initialize clientHandle file descriptor");
 
+    // SO_REUSEADDR because in case the user CTRL-C's the server it will be able to rebind without recompiling.
+    setsockopt(this->serverHandle, SOL_SOCKET, SO_REUSEADDR, &this->serverHandle, sizeof(this->serverHandle));
+
     int bindStatus = bind(
             serverHandle, 
             reinterpret_cast<struct sockaddr*>(&this->serverAddress), 

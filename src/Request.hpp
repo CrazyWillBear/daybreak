@@ -7,6 +7,8 @@
 #include <sstream>
 #include <vector>
 
+#include "Cookie.hpp"
+
 inline std::string trim(const std::string &str) {
     auto start = str.begin();
     while (start != str.end() && std::isspace(*start)) {
@@ -73,7 +75,9 @@ private:
     std::string rawRequest;
 
     Method method;
+
     std::vector<Header> headers;
+    std::vector<Cookie> cookies;
 
 public:
     explicit Request(std::string rawRequest);
@@ -81,6 +85,9 @@ public:
 
     [[nodiscard]] const Method &getMethod() const;
     auto getHeader(const std::string& name) -> std::expected<Header, const char *>;
+
+    [[nodiscard]] const std::vector<Cookie> &getCookies() const;
+    [[nodiscard]] auto getCookie(const std::string &name) const -> std::optional<Cookie> ;
 
 };
 

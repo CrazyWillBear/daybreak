@@ -5,50 +5,66 @@ Daybreak
     A C++ web framework
 </h3>
 
-## Showcase:
+## Showcase
+> [!NOTE]
+> Daybreak is HEAVILY inspired by rocket.rs for rust
 ```c++
-#include "src/Server.hpp"
+#include "src/Daybreak.hpp"
+
 #include "src/responses/HTML.hpp"
 
-/*
-    Declare pages as C++ functions:
-    
-    This allows for ENDLESS possibilities, displaying C++ 
-    datatypes on the website, integrating C++ libraries 
-    onto the web, have raw access to http request data and
-    return ANYTHING through polymorphism of the ResponseData
-    class, maybe even display system data segments onto a
-    page if you wanted. 
-*/
+// can be simplified to TARGET(index) {}
+Response index(const Pattern &pattern, const Request &request) {
+    std::vector<HTMLElement*> cookies;
 
-/* this is just a shortcut macro, you can do this manually like so: */
-/* auto index(const Pattern &pattern, const Request &request) */
-TARGET(index) {
-    return {Responses::OK, std::make_shared<HTML>(
-        /* custom HTML DSL built into C++ */
+    /*
+     * All HTML elements are under the el namespace to not
+     * conflict with existing types.
+     */
+    using namespace el;
+
+    /*
+     * Showcase of using C++ data in our HTML page:
+     */
+    for (const auto &cookie : request.getCookies())
+        cookies.emplace_back($ code(cookie.getName() + "=" + cookie.getValue()));
+
+    /*
+     * Custom HTML DSL-like usage:
+     */
+    Response response = {Responses::OK, std::make_shared<HTML>(
         $ html({
             $ head({
                 $ title("index")
             }),
             $ body({
-            /* map like initialization for html attributes */
                 {"style", "color: red;"}
             }, {
                 $ p("this is the index page, this is your request: "),
-                $ code(request.getMethod().method + " " + request.getMethod().path + " " + request.getMethod().version)
+                $ code(request.getMethod().method + " " + request.getMethod().path + " " + request.getMethod().version),
+                $ p("here are your cookies sent from your request:"),
+                $ el::div(cookies)
             })
         })
     )};
+
+    /*
+     * Add cookies to the server's response:
+     */
+    response.addCookie(Cookie({"test", "hello"}, CookieAttributes {
+        .httpOnly = true
+    }));
+
+    return response;
 }
 
 ROUTE(Methods::GET, "/", index)
 
 int main() {
-    /* this is subject to change */
     Daybreak::instance->start();
 
     return 0;
 }
-
-
 ```
+## Why
+I write most of my code in C++ so I thought: "Why not write a C++ web framework, so I can integrate some C++ projects into it?". The speed of which is fantastic and is a great project to show off on my GitHub.

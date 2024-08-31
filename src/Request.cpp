@@ -20,6 +20,13 @@ Request::Request(std::string rawRequest) : rawRequest(std::move(rawRequest)), me
         Header header = {};
         lineStream >> header;
 
+        if (header.name == "Cookie") {
+            for (auto &c : Cookie::from_string(lines[i])) {
+                this->cookies.emplace_back(c);
+            }
+            continue;
+        }
+
         this->headers.emplace_back(header);
     }
 }
@@ -38,4 +45,18 @@ auto Request::getHeader(const std::string& name) -> std::expected<Header, const 
     }
 
     return std::unexpected("Header not found!");
+}
+
+const std::vector<Cookie> &Request::getCookies() const {
+    return this->cookies;
+}
+
+auto Request::getCookie(const std::string &name) const -> std::optional<Cookie> {
+    for (const auto &cookie : this->cookies) {
+        if (cookie.getName() == name) {
+            return cookie;
+        }
+    }
+
+    return {};
 }

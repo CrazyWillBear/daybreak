@@ -47,22 +47,26 @@ public:
 };
 
 #define DEFINE_BASIC_ELEMENT(name) \
-class name : public HTMLElement { \
-public: \
-    explicit name(std::vector<HTMLElement*> children = {}) : \
-        HTMLElement(#name, {}, "", std::move(children)) {} \
-    explicit name(std::vector<std::pair<std::string, std::string>> attrib = {}, std::vector<HTMLElement*> children = {}) : \
-        HTMLElement(#name, std::move(attrib), "", std::move(children)) {} \
-};
+namespace el {\
+    class name : public HTMLElement { \
+    public: \
+        explicit name(std::vector<HTMLElement*> children = {}) : \
+            HTMLElement(#name, {}, "", std::move(children)) {} \
+        explicit name(std::vector<std::pair<std::string, std::string>> attrib = {}, std::vector<HTMLElement*> children = {}) : \
+            HTMLElement(#name, std::move(attrib), "", std::move(children)) {} \
+    }; \
+}
 
 #define DEFINE_TEXT_ELEMENT(name) \
-class name : public HTMLElement { \
-public: \
-    explicit name(std::vector<std::pair<std::string, std::string>> attributes = {}, std::string content = "", std::vector<HTMLElement*> children = {}) : \
-        HTMLElement(#name, std::move(attributes), std::move(content), std::move(children)) {} \
-    explicit name(std::string content = "", std::vector<HTMLElement*> children = {}) : \
-        HTMLElement(#name, {}, std::move(content), std::move(children)) {} \
-};
+namespace el {\
+    class name : public HTMLElement { \
+    public: \
+        explicit name(std::vector<std::pair<std::string, std::string>> attributes = {}, std::string content = "", std::vector<HTMLElement*> children = {}) : \
+            HTMLElement(#name, std::move(attributes), std::move(content), std::move(children)) {} \
+        explicit name(std::string content = "", std::vector<HTMLElement*> children = {}) : \
+            HTMLElement(#name, {}, std::move(content), std::move(children)) {} \
+    }; \
+}
 
 
 static std::string CRLF = "\r\n";
@@ -142,6 +146,7 @@ public:
 DEFINE_BASIC_ELEMENT(html);
 DEFINE_BASIC_ELEMENT(head);
 DEFINE_BASIC_ELEMENT(body);
+DEFINE_BASIC_ELEMENT(div);
 
 DEFINE_TEXT_ELEMENT(title)
 

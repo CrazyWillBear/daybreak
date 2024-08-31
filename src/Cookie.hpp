@@ -1,8 +1,8 @@
 #pragma once
 
-#include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "Date.hpp"
 
@@ -48,4 +48,6 @@ public:
     [[nodiscard]] std::string getValue() const;
 
     [[nodiscard]] std::string build() const;
+
+    static auto from_string(const std::string &value) -> std::vector<Cookie>;
 };
