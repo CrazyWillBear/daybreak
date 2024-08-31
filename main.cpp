@@ -3,7 +3,7 @@
 #include "src/responses/HTML.hpp"
 
 TARGET(index) {
-    return {Responses::OK, std::make_shared<HTML>(
+    Response response = {Responses::OK, std::make_shared<HTML>(
         $ html({
             $ head({
                 $ title("index")
@@ -16,6 +16,12 @@ TARGET(index) {
             })
         })
     )};
+
+    response.addCookie(Cookie({"test", "hello"}, CookieAttributes {
+        .httpOnly = true
+    }));
+
+    return response;
 }
 
 ROUTE(Methods::GET, "/", index)

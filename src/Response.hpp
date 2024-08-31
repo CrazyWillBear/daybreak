@@ -4,6 +4,9 @@
 #include <string>
 #include <format>
 #include <memory>
+#include <vector>
+
+#include "Cookie.hpp"
 
 typedef struct {
     unsigned int code;
@@ -39,13 +42,19 @@ private:
     Status status;
     std::shared_ptr<ResponseContent> responseContent;
 
+    std::vector<Cookie> cookies;
+
 public:
     Response(const Status &status, std::shared_ptr<ResponseContent> content);
+    Response(const Status &status, std::shared_ptr<ResponseContent> content, const std::vector<Cookie> &cookies);
     ~Response();
 
     [[nodiscard]] Status getStatus() const;
     [[nodiscard]] const ResponseContent &getResponseContent() const;
 
+    void addCookie(const Cookie &cookie);
+
     std::string build();
 };
+
 
